@@ -1,6 +1,7 @@
 package com.example.fshen4.CS442_Places_Near_Me;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Intent;
@@ -15,8 +16,10 @@ import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -45,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-
     private GoogleMap mMap;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -80,23 +82,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         ScaleDrawable sd = new ScaleDrawable(drawable, 0, 1, 1);
         address = (EditText)findViewById(R.id.tAddress);
         address.setCompoundDrawables(sd.getDrawable(), null, null, null); //set drawableLeft for example
-
-        address.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-
+        address.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                //当actionId == XX_SEND 或者 XX_DONE时都触发
-                //或者event.getKeyCode == ENTER 且 event.getAction == ACTION_DOWN时也触发
-                //注意，这是一定要判断event != null。因为在某些输入法上会返回null。
-                if (KeyEvent.ACTION_DOWN == event.getAction()) {
-                    //处理事件
-                    boolean ing = onSearchRequesting();
-                }
-                return false;
+            public boolean onTouch(View v, MotionEvent event) {
+                return onSearchRequesting();
             }
         });
     }
-
 
 
     private void setUpMapIfNeeded() {
@@ -213,66 +205,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public boolean onSearchRequesting() {
         //tracking user and calory calculation
         Intent intent = new Intent(this, SearchActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, 1);
         return true;
     }
 
-    public boolean onSearchRequested(View view) {
-        EditText tLocation = (EditText)findViewById(com.example.fshen4.CS442_Places_Near_Me.R.id.tAddress);
-        String sLocation = tLocation.getText().toString();
-        List<Address> addressList = null;
-        mMap.clear();
-        /*if (sLocation != null || !sLocation.equals("")) {
-            Geocoder geocoder = new Geocoder(this);
-            try {
-                addressList = geocoder.getFromLocationName(sLocation, 5);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            for(int i = 0; i<addressList.size(); i++) {
-                Log.d(String.valueOf(addressList.get(i).getAdminArea()), "AdminArea");
-                Log.d(String.valueOf(addressList.get(i).getLatitude()), "Latitude");
-                Log.d(String.valueOf(addressList.get(i).getLongitude()), "Longitude");
-                Log.d(String.valueOf(addressList.get(i).getPhone()), "Phone");
-                Log.d(String.valueOf(addressList.get(i).getPostalCode()), "PostalCode");
-            }
-            Address address = addressList.get(0);
-            LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-            mMap = ((SupportMapFragment) getSupportFragmentManager()
-                    .findFragmentById(com.example.fshen4.CS442_Places_Near_Me.R.id.map)).getMap();
-            LatLng sourcePosition = new LatLng(41.843730, -87.621782);
-            LatLng destPosition = new LatLng(41.864909, -87.666747);
-            md = new GMapV2Direction(sourcePosition, destPosition, GMapV2Direction.MODE_WALKING);
-            md.execute(); */
-            Document doc = null;
-            try {
-                doc = md.get();
-
-                ArrayList<LatLng> directionPoint = md.getDirection(doc);
-                PolylineOptions rectLine = new PolylineOptions().width(8)
-                        .color(Color.BLUE);
-
-                for (int i = 0; i < directionPoint.size(); i++) {
-                    rectLine.add(directionPoint.get(i));
+    @Override
+    public void onActivityResult(int reqCode, int resCode, android.content.Intent data) {
+        super.onActivityResult(reqCode, resCode, data);
+        switch(reqCode) {
+            case (1) : {
+                if (resCode == 1) {
+                    //Address newAddress = (Address)data.getParcelableExtra("SelectedAddress");
+                    Place newPlace = (Place)data.getSerializableExtra("SelectedPlace");
+                    Log.d("Place", String.valueOf(newPlace.getLongitude()) + " " + String.valueOf(newPlace.getLatitude()));
+                    // see more on Marker: https://developers.google.com/maps/documentation/android/reference/com/google/android/gms/maps/model/Marker
+                    mMap.clear();
+                    mMap.addMarker(new MarkerOptions()
+                            .title(newPlace.getName())
+                            .position(
+                                    new LatLng(newPlace.getLatitude(), newPlace.getLongitude()))
+                            .icon(BitmapDescriptorFactory
+                                    .fromResource(com.example.fshen4.CS442_Places_Near_Me.R.drawable.pin))
+                            .snippet(newPlace.getVicinity()));
+                    moveMap(new LatLng(newPlace.getLatitude(), newPlace.getLongitude()));
                 }
-                Polyline polylin = mMap.addPolyline(rectLine);
-            } catch (Exception e) {
-                //nothing to do for now
+                break;
             }
-
-            new GetPlaces(this, "ATM".toLowerCase().replace("-", "_").replace(" ", "_"), 5000).execute();
-        //}
-
-        // 除了输入查询的值，还可额外绑定一些数据
-        //Bundle appSearchData = new Bundle();
-        //appSearchData.putString("KEY", "text");
-
-        //startSearch(null, false, appSearchData, false);
-        // 必须返回true。否则绑定的数据作废
-        return true;
+            default: break;
+        }
     }
+
+
 
     public void onZoom(View view) {
         if(view.getId() == com.example.fshen4.CS442_Places_Near_Me.R.id.Zoomin) {
@@ -283,100 +246,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private class GetPlaces extends AsyncTask<Void, Void, ArrayList<Place>> {
-
-        private ProgressDialog dialog;
-        private String places;
-        private double radius;
-
-        public GetPlaces(MapsActivity mapsActivity, String places, double radius) {
-            this.places = places;
-            this.radius = radius;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Place> result) {
-            super.onPostExecute(result);
-            //if (dialog.isShowing()) {
-            //    dialog.dismiss();
-            //}
-            LatLng cll = new LatLng(41.843730, -87.621782);
-            // see more on Marker: https://developers.google.com/maps/documentation/android/reference/com/google/android/gms/maps/model/Marker
-            mMap.addMarker(new MarkerOptions().position(cll).title("Current Location"));
-            for (int i = 0; i < result.size(); i++) {
-                mMap.addMarker(new MarkerOptions()
-                        .title(result.get(i).getName())
-                        .position(
-                                new LatLng(result.get(i).getLatitude(), result
-                                        .get(i).getLongitude()))
-                        .icon(BitmapDescriptorFactory
-                                .fromResource(com.example.fshen4.CS442_Places_Near_Me.R.drawable.pin))
-                        .snippet(result.get(i).getVicinity()));
-                LatLng tempLoc = new LatLng(result.get(i).getLatitude(), result.get(i).getLongitude());
-                md = new GMapV2Direction(cll, tempLoc, GMapV2Direction.MODE_WALKING);
-                md.execute();
-                Document doc = null;
-                // Document doc = md.getDocument(cll, zll,
-                // GMapV2Direction.MODE_DRIVING);
-                try {
-                    // get the result from the asynctask returned by Google,
-                    // wait if necessary
-                    doc = md.get();
-
-                    // now process/parse the results from Google
-                    ArrayList<LatLng> directionPoint = md.getDirection(doc);
-
-                    // here, draw the lines based on the direction points
-                    PolylineOptions rectLine = new PolylineOptions().width(8)
-                            .color(Color.BLUE);
-
-                    for (int j = 0; j < directionPoint.size(); j++) {
-                        rectLine.add(directionPoint.get(j));
-                    }
-                    Polyline polylin = mMap.addPolyline(rectLine);
-
-                } catch (Exception e) {
-                    // just ignore here, possible exceptions thrown by the
-                    // md.get() call:
-                    // see
-                    // http://developer.android.com/reference/android/os/AsyncTask.html#get()
-                }
-            }
-            /*
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(result.get(0).getLatitude(), result
-                            .get(0).getLongitude())) // Sets the center of the map to
-                            // Mountain View
-                    .zoom(13) // Sets the zoom
-                    .tilt(30) // Sets the tilt of the camera to 30 degrees
-                    .build(); // Creates a CameraPosition from the builder
-            mMap.animateCamera(CameraUpdateFactory
-                    .newCameraPosition(cameraPosition));
-            */
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            //dialog = new ProgressDialog(getApplicationContext());
-            //dialog.setCancelable(false);
-            //dialog.setMessage("Loading..");
-            //dialog.isIndeterminate();
-            //dialog.show();
-        }
-
-        @Override
-        protected ArrayList<Place> doInBackground(Void... arg0) {
-            PlacesService service = new PlacesService("AIzaSyC0eOv4pn7xPPauCtkVE960iG3UM_O-ZSc");
-            ArrayList<Place> findPlaces = service.findPlaces(41.843730, -87.621782, places, radius);
-
-            for (int i = 0; i < findPlaces.size(); i++) {
-
-                Place placeDetail = findPlaces.get(i);
-                Log.e("MAPS", "places : " + placeDetail.getName());
-            }
-            return findPlaces;
-        }
-
-    }
 }

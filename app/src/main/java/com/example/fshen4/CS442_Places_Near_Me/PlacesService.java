@@ -21,7 +21,6 @@ import android.util.Log;
 public class PlacesService {
 
 	private String API_KEY;
-
 	public PlacesService(String apikey) {
 		this.API_KEY = apikey;
 	}
@@ -34,7 +33,6 @@ public class PlacesService {
 			String placeSpacification, double radius) {
 
 		String urlString = makeUrl(latitude, longitude, placeSpacification, radius);
-
 		try {
 			String json = getJSON(urlString);
 
@@ -43,10 +41,16 @@ public class PlacesService {
 			JSONArray array = object.getJSONArray("results");
 
 			ArrayList<Place> arrayList = new ArrayList<Place>();
+
+			PlaceDetailService DetailService;
+			PlaceDetail placedetail;
 			for (int i = 0; i < array.length(); i++) {
 				try {
 					Place place = Place
 							.jsonToPontoReferencia((JSONObject) array.get(i));
+					DetailService = new PlaceDetailService(API_KEY);
+					placedetail = DetailService.getPlaceDetail(place.getPlaceid());
+					place.setPhone(placedetail.getPhone());
 					Log.v("Places Services ", "" + place);
 					arrayList.add(place);
 				} catch (Exception e) {
@@ -54,8 +58,7 @@ public class PlacesService {
 			}
 			return arrayList;
 		} catch (JSONException ex) {
-			Logger.getLogger(PlacesService.class.getName()).log(Level.SEVERE,
-					null, ex);
+			Logger.getLogger(PlacesService.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		return null;
 	}
