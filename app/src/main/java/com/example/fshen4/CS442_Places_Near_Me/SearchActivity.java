@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ScaleDrawable;
-import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,12 +14,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class SearchActivity extends Activity {
     private Button bSearch;
-    private GMapV2Direction md;
+
     private Geocoder geocoder;
     private ArrayList<Place> list;
     private PlaceArrayAdapter adapter;
@@ -50,7 +48,7 @@ public class SearchActivity extends Activity {
                 getAddresses();
             }
         });
-        /*
+
         myListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapter, View v, int position, long arg3) {
@@ -64,13 +62,14 @@ public class SearchActivity extends Activity {
                 mBundle.putSerializable("SelectedPlace", selectedPlace);
                 intent.putExtras(mBundle);
                 setResult(1, intent);
-                finish();
+                //finish();
             }
         });
-        */
+
         list = new ArrayList<Place>();
         adapter = new PlaceArrayAdapter(getApplicationContext(), list);
         myListView.setAdapter(adapter);
+
 
     }
 
@@ -136,7 +135,7 @@ public class SearchActivity extends Activity {
         }
         */
 
-        new GetPlaces("ATM".toLowerCase().replace("-", "_").replace(" ", "_"), 5000).execute();
+        new GetPlaces(sLocation.toLowerCase().replace("-", "_").replace(" ", "_"), 5000).execute();
         //}
 
         // 除了输入查询的值，还可额外绑定一些数据

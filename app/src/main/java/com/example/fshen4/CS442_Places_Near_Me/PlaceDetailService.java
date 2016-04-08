@@ -36,9 +36,8 @@ public class PlaceDetailService {
         try {
             String json = getJSON(urlString);
 
-            System.out.println(json);
+            //System.out.println(json);
             JSONObject object = new JSONObject(json).getJSONObject("result");
-
 
             placeDetail = PlaceDetail
                     .jsonToPontoReferencia((JSONObject) object);

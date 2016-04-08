@@ -56,6 +56,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleApiClient client;
     private GMapV2Direction md;
     private EditText address;
+    private LatLng origin;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +89,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return onSearchRequesting();
             }
         });
+
+        origin = new LatLng(41.838598, -87.627383);
     }
 
 
@@ -117,11 +120,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
 
         // 建立位置的座標物件
-        LatLng place = new LatLng(41.838598, -87.627383);
+
 
         // 移動地圖
-        moveMap(place);
-        addMarker(place, "Hello!", "Stuart Building");
+        moveMap(origin);
+        addMarker(origin, "Hello!", "Stuart Building");
         mMap.setMyLocationEnabled(true);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -227,15 +230,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .icon(BitmapDescriptorFactory
                                     .fromResource(com.example.fshen4.CS442_Places_Near_Me.R.drawable.pin))
                             .snippet(newPlace.getVicinity()));
-                    moveMap(new LatLng(newPlace.getLatitude(), newPlace.getLongitude()));
+                    moveMap(new LatLng(newPlace.getLatitude(), newPlace.getLongitude()));Document doc = null;
+                    LatLng destPosition = new LatLng(newPlace.getLatitude(), newPlace.getLongitude());
+                    md = new GMapV2Direction(origin, destPosition, GMapV2Direction.MODE_WALKING);
+                    md.execute();
+                    try {
+                        doc = md.get();
+
+                        ArrayList<LatLng> directionPoint = md.getDirection(doc);
+                        PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.BLUE);
+
+                        for (int i = 0; i < directionPoint.size(); i++) {
+                            rectLine.add(directionPoint.get(i));
+                        }
+                        Polyline polylin = mMap.addPolyline(rectLine);
+                    } catch (Exception e) {
+                        //nothing to do for now
+                    }
                 }
                 break;
             }
             default: break;
         }
     }
-
-
 
     public void onZoom(View view) {
         if(view.getId() == com.example.fshen4.CS442_Places_Near_Me.R.id.Zoomin) {

@@ -1,8 +1,10 @@
 package com.example.fshen4.CS442_Places_Near_Me;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,13 @@ import android.widget.*;
 
 import java.util.ArrayList;
 import android.graphics.Color;
+
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.w3c.dom.Document;
+
 /**
  * Created by fshen4 on 16-4-2.
  */
@@ -17,7 +26,6 @@ public class PlaceArrayAdapter extends BaseAdapter {
     private Context mycontext;
     private LayoutInflater inflater;
     private final ArrayList<Place> items ;
-
     public PlaceArrayAdapter(Context context, ArrayList<Place> objects) {
         // TODO Auto-generated constructor stub
         mycontext = context;
@@ -99,8 +107,16 @@ public class PlaceArrayAdapter extends BaseAdapter {
 
             @Override
             public void onClick(View v) {
-                Intent phoneIntent = new Intent("android.intent.action.CALL",
-                        Uri.parse("tel:" + itemInfo.getPhone()));
+                // assuming string and if you want to get the value on click of list item
+                // do what you intend to do on click of listview row
+                //Log.d("Address", String.valueOf(selectedAddress.getLongitude()) + String.valueOf(selectedAddress.getLatitude()));
+                Intent intent = new Intent(mycontext, MapsActivity.class);
+                Bundle mBundle = new Bundle();
+                mBundle.putSerializable("SelectedPlace", itemInfo);
+                intent.putExtras(mBundle);
+                SearchActivity thisactivity = (SearchActivity)mycontext;
+                thisactivity.setResult(1, intent);
+                thisactivity.finish();
             }
         });
 
