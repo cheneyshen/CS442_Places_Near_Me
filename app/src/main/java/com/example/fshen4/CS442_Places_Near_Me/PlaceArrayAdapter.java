@@ -26,6 +26,7 @@ public class PlaceArrayAdapter extends BaseAdapter {
     private Context mycontext;
     private LayoutInflater inflater;
     private final ArrayList<Place> items ;
+   // private AdapterCallback mAdapterCallback;
     public PlaceArrayAdapter(Context context, ArrayList<Place> objects) {
         // TODO Auto-generated constructor stub
         mycontext = context;
@@ -46,8 +47,23 @@ public class PlaceArrayAdapter extends BaseAdapter {
     public long getItemId(int position) {
         return position;
     }
-
-
+/*
+    @Override
+    public void onBindViewHolder(final PlaceArrayAdapter.ViewHolder viewHolder, final int i) {
+        // simple example, call interface here
+        // not complete
+        viewHolder.itemView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    mAdapterCallback.onMethodCallback();
+                } catch (ClassCastException exception) {
+                    // do something
+                }
+            }
+        });
+    }
+*/
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // TODO Auto-generated method stub
@@ -100,7 +116,8 @@ public class PlaceArrayAdapter extends BaseAdapter {
             public void onClick(View v) {
                 Intent phoneIntent = new Intent("android.intent.action.CALL",
                     Uri.parse("tel:" + itemInfo.getPhone()));
-                mycontext.startActivity(phoneIntent);
+                phoneIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                v.getContext().startActivity(phoneIntent);
             }
         });
         holder.btDirection.setOnClickListener(new View.OnClickListener() {
@@ -110,13 +127,15 @@ public class PlaceArrayAdapter extends BaseAdapter {
                 // assuming string and if you want to get the value on click of list item
                 // do what you intend to do on click of listview row
                 //Log.d("Address", String.valueOf(selectedAddress.getLongitude()) + String.valueOf(selectedAddress.getLatitude()));
-                Intent intent = new Intent(mycontext, MapsActivity.class);
+                Intent mapIntent = new Intent(mycontext, MapsActivity.class);
                 Bundle mBundle = new Bundle();
                 mBundle.putSerializable("SelectedPlace", itemInfo);
-                intent.putExtras(mBundle);
-                SearchActivity thisactivity = (SearchActivity)mycontext;
-                thisactivity.setResult(1, intent);
-                thisactivity.finish();
+                mapIntent.putExtras(mBundle);
+                mapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                v.getContext().startActivity(mapIntent);
+                //SearchActivity thisactivity = (SearchActivity)mycontext;
+                //thisactivity.setResult(1, intent);
+                //thisactivity.finish();
             }
         });
 

@@ -112,16 +112,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-        //LatLng stuartBuilding = new LatLng(41.839118, -87.627351);
-        //mMap.addMarker(new MarkerOptions().position(stuartBuilding).title("Marker in Stuart Building"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(stuartBuilding));
-        // 刪除原來預設的內容
-        //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-
-        // 建立位置的座標物件
-
-
         // 移動地圖
         moveMap(origin);
         addMarker(origin, "Hello!", "Stuart Building");
@@ -136,6 +126,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // for ActivityCompat#requestPermissions for more details.
 
             return;
+        }
+        Intent intent = getIntent();
+        Place newPlace = (Place) intent.getSerializableExtra("SelectedPlace");
+        if (newPlace != null) {
+            Log.d("Place", String.valueOf(newPlace.getLongitude()) + " " + String.valueOf(newPlace.getLatitude()));
+            // see more on Marker: https://developers.google.com/maps/documentation/android/reference/com/google/android/gms/maps/model/Marker
+            //mMap.clear();
+            mMap.addMarker(new MarkerOptions()
+                    .title(newPlace.getName())
+                    .position(
+                            new LatLng(newPlace.getLatitude(), newPlace.getLongitude()))
+                    .icon(BitmapDescriptorFactory
+                            .fromResource(com.example.fshen4.CS442_Places_Near_Me.R.drawable.pin))
+                    .snippet(newPlace.getVicinity()));
+            moveMap(new LatLng(newPlace.getLatitude(), newPlace.getLongitude()));
+            Document doc = null;
+            LatLng destPosition = new LatLng(newPlace.getLatitude(), newPlace.getLongitude());
+            md = new GMapV2Direction(origin, destPosition, GMapV2Direction.MODE_WALKING);
+            md.execute();
+            try {
+                doc = md.get();
+
+                ArrayList<LatLng> directionPoint = md.getDirection(doc);
+                PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.BLUE);
+
+                for (int i = 0; i < directionPoint.size(); i++) {
+                    rectLine.add(directionPoint.get(i));
+                }
+                Polyline polylin = mMap.addPolyline(rectLine);
+            } catch (Exception e) {
+                //nothing to do for now
+            }
         }
     }
 
@@ -159,6 +181,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         AppIndex.AppIndexApi.start(client, viewAction);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
     @Override
     public void onStop() {
         super.onStop();
@@ -219,7 +246,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             case (1) : {
                 if (resCode == 1) {
                     //Address newAddress = (Address)data.getParcelableExtra("SelectedAddress");
-                    Place newPlace = (Place)data.getSerializableExtra("SelectedPlace");
+                    Place newPlace = (Place) data.getSerializableExtra("SelectedPlace");
                     Log.d("Place", String.valueOf(newPlace.getLongitude()) + " " + String.valueOf(newPlace.getLatitude()));
                     // see more on Marker: https://developers.google.com/maps/documentation/android/reference/com/google/android/gms/maps/model/Marker
                     mMap.clear();
