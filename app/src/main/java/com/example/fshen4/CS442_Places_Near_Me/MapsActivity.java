@@ -80,9 +80,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Drawable drawable = getResources().getDrawable(R.drawable.ic_menu_search);
         drawable.setBounds(0, 0, (int)(drawable.getIntrinsicWidth()*0.5),
                 (int)(drawable.getIntrinsicHeight()*0.5));
-        ScaleDrawable sd = new ScaleDrawable(drawable, 0, 1, 1);
+        //ScaleDrawable sd = new ScaleDrawable(drawable, 0, 1, 1);
         address = (EditText)findViewById(R.id.tAddress);
-        address.setCompoundDrawables(sd.getDrawable(), null, null, null); //set drawableLeft for example
+        address.setCompoundDrawables(drawable, null, null, null);
+        //address.setCompoundDrawables(sd.getDrawable(), null, null, null); //set drawableLeft for example
         address.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -111,11 +112,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        mMap.getUiSettings().setZoomControlsEnabled(true);
         // 移動地圖
         moveMap(origin);
         addMarker(origin, "Hello!", "Stuart Building");
-        mMap.setMyLocationEnabled(true);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -127,6 +127,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             return;
         }
+        mMap.setMyLocationEnabled(true);
         Intent intent = getIntent();
         Place newPlace = (Place) intent.getSerializableExtra("SelectedPlace");
         if (newPlace != null) {
@@ -278,15 +279,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 break;
             }
             default: break;
-        }
-    }
-
-    public void onZoom(View view) {
-        if(view.getId() == com.example.fshen4.CS442_Places_Near_Me.R.id.Zoomin) {
-            mMap.animateCamera(CameraUpdateFactory.zoomIn());
-        }
-        if(view.getId() == com.example.fshen4.CS442_Places_Near_Me.R.id.Zoomout) {
-            mMap.animateCamera(CameraUpdateFactory.zoomOut());
         }
     }
 

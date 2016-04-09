@@ -7,6 +7,7 @@ import android.graphics.drawable.ScaleDrawable;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -35,12 +36,13 @@ public class SearchActivity extends Activity {
         //final ArrayAdapter<String> aa = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,todoItems);
         myListView = (ListView)findViewById(R.id.listView1);
 
-        Drawable drawable = getResources().getDrawable(R.drawable.ic_menu_search);
+        Drawable drawable = ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_menu_search);
         drawable.setBounds(0, 0, (int)(drawable.getIntrinsicWidth()*0.5),
                 (int)(drawable.getIntrinsicHeight()*0.5));
-        ScaleDrawable sd = new ScaleDrawable(drawable, 0, 1, 1);
+        //ScaleDrawable sd = new ScaleDrawable(drawable, 0, 1, 1);
         bSearch = (Button)findViewById(R.id.bSearch);
-        bSearch.setCompoundDrawables(sd.getDrawable(), null, null, null); //set drawableLeft for example
+        bSearch.setCompoundDrawables(drawable, null, null, null); //set drawableLeft for example
+        //bSearch.setCompoundDrawables(sd.getDrawable(), null, null, null); //set drawableLeft for example
         bSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
